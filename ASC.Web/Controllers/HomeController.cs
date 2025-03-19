@@ -4,28 +4,39 @@ using ASC.Solution.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using System.Diagnostics;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Session;
+using System.Text.Json;
+using ASC.Utilities;
+using ASC.Web.Controllers;
 
-namespace ASC.Solution.Controllers
+namespace ASC.Web.Controllers
 {
-    public class HomeController : Controller
+    public class HomeController : AnonymousController
     {
+        private readonly IOptions<ApplicationSettings> _settings;
 
-        private readonly ILogger<HomeController> _logger;
-        private IOptions<ApplicationSettings> _settings;
-        public HomeController(ILogger<HomeController> logger, IOptions<ApplicationSettings> settings)
+        public HomeController(IOptions<ApplicationSettings> settings)
         {
-            _logger = logger;
             _settings = settings;
         }
-
-        public IActionResult Index([FromServices] IEmailSender emailSender)
+        public IActionResult Index()
         {
-            var emailService = this.HttpContext.RequestServices.GetService(typeof(IEmailSender)) as IEmailSender;
+            // Set Session
+            HttpContext.Session.SetSession("Test", _settings.Value);
+
+            // Get Session
+            var settings = HttpContext.Session.GetSession<ApplicationSettings>("Test");
+
+            // Usage of IOoptions
             ViewBag.Title = _settings.Value.ApplicationTitle;
+
+            // Test fail test case
+            // ViewData.Model = "Test";
+            // throw new Exception("Login Fail!!!");
+
             return View();
         }
-
-
         public IActionResult Privacy()
         {
             return View();
@@ -34,12 +45,10 @@ namespace ASC.Solution.Controllers
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
-        }
-
-        public IActionResult Dashboard()
-        {
-            return View();
+            return View(new ErrorViewModel
+            {
+                RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier
+            });
         }
     }
 }

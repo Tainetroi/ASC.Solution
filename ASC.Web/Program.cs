@@ -7,44 +7,31 @@ using ASC.Web.Data;
 using Microsoft.Extensions.Options;
 using ASC.DataAccess.Interfaces;
 using ASC.DataAccess;
+using ASC.Web.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+var connectionString = builder.Configuration.GetConnectionString("ASCWebContextConnection") ?? throw new InvalidOperationException("Connection string 'ASCWebContextConnection' not found.");;
 
-// Add services to the container.
-var connectionString = 
-    builder.Configuration.GetConnectionString("DefaultConnection") ?? 
-    throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+builder.Services.AddDbContext<ASCWebContext>(options => options.UseSqlServer(connectionString));
 
-builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(connectionString));
+//builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true).AddEntityFrameworkStores<ASCWebContext>();
 
-builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+builder.Services
+       .AddConfig(builder.Configuration)
+       .AddMyDependencyGroup();
 
-builder.Services.AddIdentity<IdentityUser, IdentityRole>((options) =>
+// Add services for session and caching
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
 {
-    options.User.RequireUniqueEmail = true;
-}).AddEntityFrameworkStores<ApplicationDbContext>().AddDefaultTokenProviders();
-
-builder.Services.AddScoped<DbContext, ApplicationDbContext>();
-
-builder.Services.AddOptions();
-
-builder.Services.Configure<ApplicationSettings>(builder.Configuration.GetSection("AppSettings"));
-
-builder.Services.AddControllersWithViews();
-
-builder.Services.AddTransient<IEmailSender, AuthMessageSender>();
-
-builder.Services.AddTransient<ISmsSender, AuthMessageSender>();
-
-builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-
-builder.Services.AddSingleton<IIdentitySeed, IdentitySeed>();
-
-builder.Services.AddRazorPages();
+    options.IdleTimeout = TimeSpan.FromMinutes(30);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {
     app.UseMigrationsEndPoint();
@@ -52,17 +39,20 @@ if (app.Environment.IsDevelopment())
 else
 {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
 app.UseHttpsRedirection();
-
 app.UseStaticFiles();
-
 app.UseRouting();
 
+// Enable session before authorization
+app.UseSession();
 app.UseAuthorization();
+
+app.MapControllerRoute(
+    name: "areaRoute",
+    pattern: "{area:exists}/{controller=Home}/{action=Index}");
 
 app.MapControllerRoute(
     name: "default",
@@ -70,14 +60,18 @@ app.MapControllerRoute(
 
 app.MapRazorPages();
 
+// Seed user data
 using (var scope = app.Services.CreateScope())
 {
     var storageSeed = scope.ServiceProvider.GetRequiredService<IIdentitySeed>();
     await storageSeed.Seed(
         scope.ServiceProvider.GetService<UserManager<IdentityUser>>(),
         scope.ServiceProvider.GetService<RoleManager<IdentityRole>>(),
-        scope.ServiceProvider.GetService<IOptions<ApplicationSettings>>()
-    );
+        scope.ServiceProvider.GetService<IOptions<ApplicationSettings>>());
 }
-
+using (var scope = app.Services.CreateScope())
+{
+    var navigationCacheOperations = scope.ServiceProvider.GetRequiredService<INavigationCacheOperations>();
+    await navigationCacheOperations.CreateNavigationCacheAsync();
+}
 app.Run();
