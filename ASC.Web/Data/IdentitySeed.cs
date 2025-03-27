@@ -51,7 +51,7 @@ namespace ASC.Web.Data
                 if (result.Succeeded)
                 {
 
-                    await userManager.AddClaimAsync(user, new System.Security.Claims.Claim("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress", options.Value.AdminEmail));
+                    await userManager.AddClaimAsync(user, new System.Security.Claims.Claim("https://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress", options.Value.AdminEmail));
                     await userManager.AddClaimAsync(user, new System.Security.Claims.Claim("IsActive", "True"));
 
                     // Add Admin to Admin roles
@@ -72,8 +72,8 @@ namespace ASC.Web.Data
             {
                 IdentityUser user = new IdentityUser
                 { 
-                    UserName = options.Value.AdminName,
-                    Email = options.Value.AdminEmail,
+                    UserName = options.Value.EngineerName,
+                    Email = options.Value.EngineerEmail,
                     EmailConfirmed = true,
                     LockoutEnabled = false
                 };
@@ -85,7 +85,7 @@ namespace ASC.Web.Data
             if (result.Succeeded)
             {
 
-                await userManager.AddClaimAsync(user, new System.Security.Claims.Claim("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress", options.Value.EngineerEmail));
+                await userManager.AddClaimAsync(user, new System.Security.Claims.Claim("https://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress", options.Value.EngineerEmail));
                 await userManager.AddClaimAsync(user, new System.Security.Claims.Claim("IsActive", "True"));
 
                 // Add Admin to Admin roles

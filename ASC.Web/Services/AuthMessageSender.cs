@@ -1,14 +1,16 @@
 ﻿using ASC.Solution.Configuration;
+using ASC.Solution.Services;
 using Microsoft.Extensions.Options;
-
-using System.Threading.Tasks;
-using MailKit.Net.Smtp;
 using MimeKit;
-namespace ASC.Solution.Services
+using MailKit.Net.Smtp;
+using System.Threading.Tasks;
+
+namespace ASC.Web.Services
 {
     public class AuthMessageSender : IEmailSender, ISmsSender
     {
-        private IOptions<ApplicationSettings> _settings;
+        private readonly IOptions<ApplicationSettings> _settings;
+
         public AuthMessageSender(IOptions<ApplicationSettings> settings)
         {
             _settings = settings;
@@ -33,7 +35,8 @@ namespace ASC.Solution.Services
 
         public Task SendSmsAsync(string number, string message)
         {
-            // Implement SMS sending logic here
+            // Hiện tại chưa triển khai gửi SMS.
+            // Nếu cần triển khai, bạn có thể tích hợp API SMS ở đây.
             return Task.CompletedTask;
         }
     }

@@ -105,46 +105,43 @@ namespace ASC.Web.Areas.Identity.Pages.Account
 
         public async Task<IActionResult> OnPostAsync(string returnUrl = null)
         {
-            returnUrl ??= Url.Content("~/ServiceRequests/Dashboard");
-
-            ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
-
+            // returnUrl = returnUrl ?? Url.Content("~/");
             if (ModelState.IsValid)
             {
-                // Kiểm tra xem user có tồn tại không
                 var user = await _UserManager.FindByEmailAsync(Input.Email);
                 if (user == null)
                 {
-                    ModelState.AddModelError(string.Empty, "User not found.");
+                    ModelState.AddModelError(string.Empty, "Invalid login attempt.");
                     return Page();
                 }
 
-                // Kiểm tra tài khoản đã xác thực email chưa
-                if (!user.EmailConfirmed)
+                var list = await _UserManager.GetClaimsAsync(user);
+                var isActive = Boolean.Parse(list.SingleOrDefault(p => p.Type == "IsActive").Value);
+                if (isActive)
                 {
-                    ModelState.AddModelError(string.Empty, "Email not confirmed.");
+                    ModelState.AddModelError(string.Empty, "Account has been locked.");
                     return Page();
                 }
 
-                // Kiểm tra xem mật khẩu có đúng không trước khi gọi PasswordSignInAsync
-                var isPasswordCorrect = await _UserManager.CheckPasswordAsync(user, Input.Password);
-                if (!isPasswordCorrect)
-                {
-                    ModelState.AddModelError(string.Empty, "Incorrect password.");
-                    return Page();
-                }
-
-                // Đăng nhập bằng SignInManager
-                var result = await _signInManager.PasswordSignInAsync(user, Input.Password, Input.RememberMe, lockoutOnFailure: false);
+                var result = await _signInManager.PasswordSignInAsync(user.UserName, Input.Password, Input.RememberMe, lockoutOnFailure: false);
                 if (result.Succeeded)
                 {
-                    _logger.LogInformation("User logged in.");
-                    return LocalRedirect(returnUrl);
+                    _logger.LogInformation(1, "User logged in.");
+                    if (!string.IsNullOrWhiteSpace(returnUrl))
+                    {
+                        return RedirectToAction(returnUrl);
+                    }
+                    else
+                    {
+                        return RedirectToAction("Dashboard", "Dashboard", new { Area = "ServiceRequests" });
+                    }
                 }
+
                 if (result.RequiresTwoFactor)
                 {
                     return RedirectToPage("./LoginWith2fa", new { ReturnUrl = returnUrl, RememberMe = Input.RememberMe });
                 }
+
                 if (result.IsLockedOut)
                 {
                     _logger.LogWarning("User account locked out.");
@@ -157,7 +154,7 @@ namespace ASC.Web.Areas.Identity.Pages.Account
                 }
             }
 
-            // Nếu có lỗi validate, hiển thị lại form
+            // If we got this far, something failed, redisplay form
             return Page();
         }
     }

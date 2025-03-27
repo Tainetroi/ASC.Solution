@@ -13,7 +13,7 @@ namespace ASC.Web.Areas.ServiceRequests.Controllers
         {
             _settings = settings;
         }
-        public IActionResult Index()
+        public IActionResult Dashboard()
         {
             return View();
         }

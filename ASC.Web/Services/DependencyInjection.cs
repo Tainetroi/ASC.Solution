@@ -32,7 +32,7 @@ namespace ASC.Web.Services
 
         }
 
-                       //Add service
+        //Add service
 
         public static IServiceCollection AddMyDependencyGroup(this IServiceCollection services)
         {
