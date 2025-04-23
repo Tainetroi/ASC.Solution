@@ -14,7 +14,6 @@ var connectionString = builder.Configuration.GetConnectionString("ASCWebContextC
 
 builder.Services.AddDbContext<ASCWebContext>(options => options.UseSqlServer(connectionString));
 
-//builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true).AddEntityFrameworkStores<ASCWebContext>();
 
 builder.Services
        .AddConfig(builder.Configuration)

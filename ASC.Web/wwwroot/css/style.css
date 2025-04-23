@@ -55,7 +55,7 @@ header.secureLayout, main.secureLayout, footer.secureLayout {
     margin-bottom: 0px;
 }
 
-.input-field.input-validation-error {
+.input-field .input-validation-error {
     border-bottom: 1px solid #FF4081;
     box-shadow: 0 1px 0 0 #FF4081;
 }
@@ -67,4 +67,8 @@ header.secureLayout, main.secureLayout, footer.secureLayout {
 
 .validation-summary-errors {
     color: #FF4081;
+}
+
+.margin-bottom-50px {
+    margin-bottom: 50px;
 }

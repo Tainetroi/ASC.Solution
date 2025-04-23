@@ -1,9 +1,12 @@
-﻿@using ASC.Web.Data
-@using Microsoft.AspNetCore.Http
-@using ASC.Utilities
+﻿@using ASC.Utilities
+@using ASC.Web.Data
+@using Microsoft.Extensions.Options;
+@using ASC.Solution.Configuration;
 
-@model ASC.Web.Models.NavigationMenu
+@* Lấy thông tin user đăng nhập *@
 @inject IHttpContextAccessor UserHttpContext
+
+@* Lấy menu *@
 @inject INavigationCacheOperations navigationCache
 
 @{
@@ -26,7 +29,7 @@
         <li>
             <div class="user-view">
                 <div class="background blue-grey lighten-1"></div>
-                <a href="#!user"><img class="circle" src="~/images/xe3.jpg"></a>
+                <a href="#!user"><img class="circle" src="~/images/logo.png"></a>
                 <a href="#!name"><span class="white-text name">@currentUser.Name</span></a>
                 <a href="#!email"><span class="white-text email">@currentUser.Email</span></a>
             </div>
@@ -82,7 +85,7 @@
     </div>
     <div class="footer-copyright row margin-bottom-8px">
         <div class="col s12">
-            Powered by <a class="brown-text text-lighten-3" href="https://materializecss.com">
+            Powered by <a class="brown-text text-lighten-3" href="http://materializecss.com">
                 Materialize
             </a>
         </div>
@@ -107,4 +110,4 @@
     </script>
 }
 
-@RenderSection("Scripts", required: false)
+//RenderSection("Scripts", required: false)
