@@ -1,17 +1,15 @@
-﻿using ASC.Model.BaseTypes;
-using ASC.Model.Models;
+﻿using ASC.Model.Models;
+using ASC.Web.Areas.Configuration.Models;
 using AutoMapper;
 
-namespace ASC.Web.Areas.Configuration.Models
+public class MappingProfile : Profile
 {
-    public class MappingProfile : Profile
+    public MappingProfile()
     {
-        public MappingProfile()
-        {
-            CreateMap<MasterDataKey, MasterDataKeyViewModel>();
-            CreateMap<MasterDataKeyViewModel, MasterDataKey>();
-            CreateMap<MasterDataValue, MasterDataValueViewModel>();
-            CreateMap<MasterDataValueViewModel, MasterDataValue>();
-        }
+        CreateMap<MasterDataKey, MasterDataKeyViewModel>();
+        CreateMap<MasterDataKeyViewModel, MasterDataKey>();
+
+        CreateMap<MasterDataValue, MasterDataValueViewModel>();
+        CreateMap<MasterDataValueViewModel, MasterDataValue>();
     }
 }

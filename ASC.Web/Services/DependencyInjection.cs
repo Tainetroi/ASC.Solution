@@ -39,6 +39,13 @@ namespace ASC.Web.Services
                     options.ClientId = config["Google:Identity:ClientId"];
                     options.ClientSecret = config["Google:Identity:ClientSecret"];
                 });
+            //services.AddDistributedMemoryCache();
+            services.AddStackExchangeRedisCache(options =>
+            {
+                var redisConfig = config.GetSection("CacheSettings");
+                options.Configuration = redisConfig["CacheConnectionString"];
+                options.InstanceName = redisConfig["CacheInstance"];
+            });
 
             return services;
 
@@ -46,7 +53,7 @@ namespace ASC.Web.Services
 
         //Add service
 
-        public static IServiceCollection AddMyDependencyGroup(this IServiceCollection services)
+        public static IServiceCollection AddMyDependencyGroup(this IServiceCollection services, ConfigurationManager configuration)
         {
 
             //Add ApplicationDbContext
@@ -75,17 +82,24 @@ namespace ASC.Web.Services
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddDistributedMemoryCache();
             services.AddSingleton<INavigationCacheOperations, NavigationCacheOperations>();
+            services.AddScoped<IMasterDataCacheOperations, MasterDataCacheOperations>();
+            services.AddScoped<IServiceRequestOperations, ServiceRequestOperations>();
+
             //Add RazorPages, MVC
 
-            services.AddRazorPages();
+            // services.AddRazorPages();
+            services.AddRazorPages()
+     .AddMvcOptions(options => { })
+     .AddCookieTempDataProvider(); // ✅ Bắt buộc
             services.AddDatabaseDeveloperPageExceptionFilter();
 
-            services.AddControllersWithViews();
+            services.AddControllersWithViews().AddJsonOptions(options => {
+                options.JsonSerializerOptions.PropertyNamingPolicy = null;
+                options.JsonSerializerOptions.DictionaryKeyPolicy = null;
+            });
             //Add MasterDataOperations
             services.AddScoped<IMasterDataOperations, MasterDataOperations>();
             services.AddAutoMapper(typeof(ApplicationDbContext));
-            //
-
             return services;
         }
     }
